@@ -12,13 +12,15 @@ To develop, build, and deploy this application, you will need the following on y
 - [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html): The AWS CDK is
   used to deploy components to AWS
 - [Docker](https://docs.docker.com/desktop/): The AWS CDK uses Docker under the hood when
-  bundling source code for Lambda deployment
+  bundling source code for Lambda deployment. Additionally, the integration tests use
+  Docker to spin up Localstack resources
 
 ### Deploying to AWS
 
 To deploy the stack to AWS, take the following steps using the AWS CDK:
 
 1. Open a terminal session using the root directory of this solution as it's current working directory
-1. Ensure your terminal is using the correct AWS credentials/account for deployment: `aws sts get-caller-identity`
+1. Ensure your terminal is using the correct AWS credentials/account for deployment: `aws sts get-caller-identity`. The IAM
+   user/role used needs permission to create and manage all resources in the stack (API Gateways, Lambdas, Dynamo tables, IAM roles, etc.)
 1. If the AWS account you are deploying to has never [been bootstrapped for the CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html), you'll need to bootstrap the AWS account: `cdk bootstrap`
 1. Deploy the stack: `cdk deploy --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`

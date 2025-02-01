@@ -12,18 +12,34 @@ namespace TopicStream.Functions;
 class ConnectionManager
 {
   /// <summary>
-  /// Register a new connection to the application
+  /// Register a user connecting to the application
   /// </summary>
   /// <param name="request">The API Gateway request</param>
   /// <param name="context">Additional context for the Lambda environment</param>
-  /// <returns>A success response upon connection registration</returns>
+  /// <returns>A success response after processing the connection request</returns>
   public static APIGatewayProxyResponse Connect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogDebug("Connection request received", request);
+    context.Logger.LogDebug($"Connection request received {request}", request);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,
       Body = "Connected",
+    };
+  }
+
+  /// <summary>
+  /// Register a user disconnecting from the application
+  /// </summary>
+  /// <param name="request">The API Gateway request</param>
+  /// <param name="context">Additional context for the Lambda environment</param>
+  /// <returns>A success response after processing the disconnection request</returns>
+  public static APIGatewayProxyResponse Disconnect(APIGatewayProxyRequest request, ILambdaContext context)
+  {
+    context.Logger.LogDebug($"Disconnection request received {request}", request);
+    return new APIGatewayProxyResponse
+    {
+      StatusCode = 200,
+      Body = "Disconnected",
     };
   }
 }

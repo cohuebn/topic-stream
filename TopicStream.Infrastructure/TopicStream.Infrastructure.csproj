@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- General project build setttings -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,6 +8,13 @@
     <RollForward>Major</RollForward>
   </PropertyGroup>
 
+  <!-- Compiler/code writing settings -->
+  <PropertyGroup>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Dependencies -->
   <ItemGroup>
     <PackageReference Include="Amazon.CDK.Lib" Version="2.177.0" />
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" />
