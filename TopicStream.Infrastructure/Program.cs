@@ -33,8 +33,13 @@ var bundledCode = Code.FromAsset(cliOptions.FunctionsProject, new Amazon.CDK.AWS
 
 // Create the AWS resources for the stack
 var app = new App();
+
+_ = new AccountStack(app, "AccountStack");
+
 _ = new TopicStreamStack(app, cliOptions.StackId, new TopicStreamStackProps
 {
   BundledCode = bundledCode
 });
+
+
 app.Synth();

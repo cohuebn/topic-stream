@@ -23,18 +23,25 @@ internal class TopicStreamStack : Stack
 
   public TopicStreamStack(Construct scope, string id, ITopicStreamStackProps props) : base(scope, id, props)
   {
-    _ = new Function(this, "Connect", new TopicStreamFunctionProps
+    var connectFunction = new Function(this, "Connect", new TopicStreamFunctionProps
     {
+      FunctionName = $"{id}-Connect",
       Handler = "TopicStream.Functions::TopicStream.Functions.ConnectionManager::Connect",
       Code = props.BundledCode,
-      FunctionName = $"{id}-Connect",
     });
 
-    _ = new Function(this, "Disconnect", new TopicStreamFunctionProps
+    var disconnectFunction = new Function(this, "Disconnect", new TopicStreamFunctionProps
     {
+      FunctionName = $"{id}-Disconnect",
       Handler = "TopicStream.Functions::TopicStream.Functions.ConnectionManager::Connect",
       Code = props.BundledCode,
-      FunctionName = $"{id}-Disconnect",
+    });
+
+    _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
+    {
+      ApiName = $"{id}-Api",
+      ConnectFunction = connectFunction,
+      DisconnectFunction = disconnectFunction,
     });
   }
 }
