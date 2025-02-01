@@ -10,7 +10,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}/TopicStream",
       "preLaunchTask": "build",
-      "program": "bin/Debug/net9.0/TopicStream.dll",
+      "program": "bin/Debug/net8.0/TopicStream.dll",
       "args": ["synth"],
       "console": "internalConsole"
     }

@@ -1,5 +1,5 @@
 {
-  "app": "dotnet run --project TopicStream.csproj",
+  "app": "dotnet run --project TopicStream.Infrastructure.csproj",
   "watch": {
     "include": ["**"],
     "exclude": [

@@ -8,7 +8,7 @@ TopicStream is a WebSocket-based API designed for real-time message streaming. I
 
 To develop, build, and deploy this application, you will need the following on your machine:
 
-- [.NET](https://dotnet.microsoft.com/en-us/): This project was created using .NET 9.0
+- [.NET](https://dotnet.microsoft.com/en-us/): This project was created using .NET 8.0
 - [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) - The AWS CDK is
   used to deploy components to AWS
 
