@@ -1,24 +1,18 @@
 ﻿using Amazon.CDK;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace TopicStream
+
+namespace TopicStream;
+
+/// <summary>
+/// This is the entry point of the CDK application. It's responsible for creating the TopicStream stack
+/// and creating the CloudFormation template to deploy into AWS
+/// </summary>
+sealed class Program
 {
-    sealed class Program
+    public static void Main()
     {
-        public static void Main(string[] args)
-        {
-            var app = new App();
-            new TopicStreamStack(app, "TopicStreamStack", new StackProps
-            {
-                Env = new Amazon.CDK.Environment
-                {
-                    Account = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_ACCOUNT"),
-                    Region = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_REGION"),
-                }
-            });
-            app.Synth();
-        }
+        var app = new App();
+        _ = new TopicStreamStack(app, "TopicStreamStack", new StackProps());
+        app.Synth();
     }
 }
