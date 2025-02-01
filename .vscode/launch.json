@@ -8,9 +8,9 @@
       "name": "Debug CDK",
       "type": "coreclr",
       "request": "launch",
-      "cwd": "${workspaceFolder}/TopicStream",
+      "cwd": "${workspaceFolder}/TopicStream.Infrastructure",
       "preLaunchTask": "build",
-      "program": "bin/Debug/net8.0/TopicStream.dll",
+      "program": "bin/Debug/net8.0/TopicStream.Infrastructure.dll",
       "args": ["synth"],
       "console": "internalConsole"
     }
