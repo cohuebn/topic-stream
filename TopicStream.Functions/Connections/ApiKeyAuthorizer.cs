@@ -6,7 +6,7 @@ using Amazon.APIGateway;
 using Microsoft.Extensions.Caching.Memory;
 using Amazon.APIGateway.Model;
 
-namespace TopicStream.Functions;
+namespace TopicStream.Functions.Connections;
 
 /// <summary>
 /// This authorizer is built as a workaround for lack of success getting API Gateway's built-in

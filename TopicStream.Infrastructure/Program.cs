@@ -38,6 +38,7 @@ _ = new AccountStack(app, "AccountStack");
 
 _ = new TopicStreamStack(app, cliOptions.StackId, new TopicStreamStackProps
 {
+  ResourcePrefix = cliOptions.StackId,
   BundledCode = bundledCode
 });
 

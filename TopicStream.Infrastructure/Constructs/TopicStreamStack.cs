@@ -1,5 +1,4 @@
 using Amazon.CDK;
-using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
@@ -7,11 +6,13 @@ namespace TopicStream.Infrastructure.Constructs;
 
 internal interface ITopicStreamStackProps : IStackProps
 {
+  public string? ResourcePrefix { get; }
   public AssetCode BundledCode { get; }
 }
 
 internal class TopicStreamStackProps : StackProps, ITopicStreamStackProps
 {
+  public string? ResourcePrefix { get; init; }
   public required AssetCode BundledCode { get; init; }
 }
 
@@ -23,34 +24,31 @@ internal class TopicStreamStack : Stack
 {
   public TopicStreamStack(Construct scope, string id, ITopicStreamStackProps props) : base(scope, id, props)
   {
+    _ = new ConnectionStates(this, "ConnectionStates", new ConnectionStatesProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+    });
+
     var authorizerFunction = new AuthorizerFunction(this, "Authorizer", new AuthorizerFunctionProps
     {
       Stack = this,
-      FunctionName = $"{id}-Authorizer",
-      Handler = "TopicStream.Functions::TopicStream.Functions.ApiKeyAuthorizer::Authorize",
+      FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "Authorizer"),
+      Handler = "TopicStream.Functions::TopicStream.Functions.Connections.ApiKeyAuthorizer::Authorize",
       Code = props.BundledCode,
     });
 
-    var connectFunction = new Function(this, "Connect", new TopicStreamFunctionProps
+    var connectionFunctions = new ConnectionFunctions(this, "ConnectionFunctions", new ConnectionFunctionsProps
     {
-      FunctionName = $"{id}-Connect",
-      Handler = "TopicStream.Functions::TopicStream.Functions.Connection::Connect",
-      Code = props.BundledCode,
-    });
-
-    var disconnectFunction = new Function(this, "Disconnect", new TopicStreamFunctionProps
-    {
-      FunctionName = $"{id}-Disconnect",
-      Handler = "TopicStream.Functions::TopicStream.Functions.Connection::Connect",
-      Code = props.BundledCode,
+      ResourcePrefix = props.ResourcePrefix,
+      BundledCode = props.BundledCode,
     });
 
     _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
     {
       ApiName = $"{id}-Api",
       AuthorizeFunction = authorizerFunction,
-      ConnectFunction = connectFunction,
-      DisconnectFunction = disconnectFunction,
+      ConnectFunction = connectionFunctions.ConnectFunction,
+      DisconnectFunction = connectionFunctions.DisconnectFunction,
     });
   }
 }

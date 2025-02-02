@@ -1,7 +1,7 @@
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 
-namespace TopicStream.Functions;
+namespace TopicStream.Functions.Connections;
 
 
 /// <summary>

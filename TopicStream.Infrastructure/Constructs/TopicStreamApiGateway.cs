@@ -55,9 +55,9 @@ internal class TopicStreamApiGateway : Construct
 
     // For this assessment, we only need a single stage; in a real production system, we might have multiple stages
     // based on requirements.
-    _ = new WebSocketStage(this, "DefaultStage", new WebSocketStageProps
+    _ = new WebSocketStage(this, "LiveStage", new WebSocketStageProps
     {
-      StageName = "$default",
+      StageName = "live",
       Description = "The live, publicly accessible stage of the API",
       AutoDeploy = true,
       WebSocketApi = api,

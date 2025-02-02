@@ -1,6 +1,6 @@
 using Amazon.Lambda.APIGatewayEvents;
 
-namespace TopicStream.Functions;
+namespace TopicStream.Functions.Connections;
 
 public static class IamPolicyGenerator
 {
