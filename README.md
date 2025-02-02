@@ -52,6 +52,14 @@ In the last command above, you can deploy a specific stack by replacing `--all` 
 - Deploy the `AccountStack` stack: `cdk deploy AccountStack --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
 - Deploy the `TopicStream` stack: `cdk deploy TopicStream --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
 
+## Destroying a Deployed Stack
+
+See the above section for context about the stacks. To destroy a stack, follow the same
+steps as the above section, except the last one. Instead, run:
+
+- Destroy all stacks: `cdk destroy --all --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
+- Destroy the TopicStream stack: `cdk destroy TopicStream --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
+
 ## Running Functional Tests
 
 This section describes how to run the [functional tests](./TopicStream.FunctionalTests/) against

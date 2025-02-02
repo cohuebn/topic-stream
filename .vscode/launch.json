@@ -11,7 +11,7 @@
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "build",
       "program": "TopicStream.Infrastructure/bin/Debug/net8.0/TopicStream.Infrastructure.dll",
-      "args": ["synth"],
+      "args": ["--functions-project", "TopicStream.Functions"],
       "console": "internalConsole"
     },
     {
