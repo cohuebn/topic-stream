@@ -1,5 +1,7 @@
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
 
 namespace TopicStream.Functions.Connections;
 
@@ -9,6 +11,13 @@ namespace TopicStream.Functions.Connections;
 /// </summary>
 class Connection
 {
+  private readonly AmazonDynamoDBClient _dynamoClient;
+
+  public Connection()
+  {
+    _dynamoClient = new AmazonDynamoDBClient();
+  }
+
   /// <summary>
   /// Register a user connecting to the application
   /// </summary>
@@ -18,7 +27,12 @@ class Connection
   public static APIGatewayProxyResponse Connect(APIGatewayProxyRequest request, ILambdaContext context)
   {
     var principal = ApiGatewayRequestParser.GetRequiredPrincipalIdFromRequest(request);
-    context.Logger.LogDebug("Connection request received {principal}", principal);
+    var connectionId = ApiGatewayRequestParser.GetRequiredConnectionIdFromRequest(request);
+    context.Logger.LogDebug(
+      "Connection request received; Principal: {principal}, Connection ID: ${connectionId}",
+      principal,
+      connectionId
+    );
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,

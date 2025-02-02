@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.FunctionalTests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.Functions.UnitTests", "TopicStream.Functions.UnitTests\TopicStream.Functions.UnitTests.csproj", "{8470B70F-650F-4BDF-8666-D3675E614477}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.Configuration", "TopicStream.Configuration\TopicStream.Configuration.csproj", "{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,5 +74,17 @@ Global
 		{8470B70F-650F-4BDF-8666-D3675E614477}.Release|x64.Build.0 = Release|Any CPU
 		{8470B70F-650F-4BDF-8666-D3675E614477}.Release|x86.ActiveCfg = Release|Any CPU
 		{8470B70F-650F-4BDF-8666-D3675E614477}.Release|x86.Build.0 = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|x64.Build.0 = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Debug|x86.Build.0 = Debug|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|x64.ActiveCfg = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|x64.Build.0 = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|x86.ActiveCfg = Release|Any CPU
+		{6E5D18B4-0E65-45B3-89E5-911B01FFEE7F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

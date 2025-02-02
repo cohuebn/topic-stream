@@ -24,6 +24,8 @@ Launch configurations for debugging have only been setup for VS Code.
 
 This solution is organized into the following projects:
 
+- [TopicStream.Configuration](./TopicStream.Configuration/): Helpers for common configuration lookup.
+  E.g. required environment variables
 - [TopicStream.FunctionalTests](./TopicStream.FunctionalTests/): These are functional tests to test a deployed instance of
   the application end-to-end. They connect to an actual deployed instance in AWS
 - [TopicStream.Functions](./TopicStream.Functions/): This is the source code run by Lambdas within the TopicStream system

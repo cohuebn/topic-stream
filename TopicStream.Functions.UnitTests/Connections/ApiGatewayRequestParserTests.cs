@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Amazon.Lambda.APIGatewayEvents;
 using TopicStream.Functions.Connections;
@@ -59,5 +60,64 @@ public class ApiGatewayRequestParserTests
 
     var exception = Assert.Throws<KeyNotFoundException>(() => ApiGatewayRequestParser.GetRequiredPrincipalIdFromRequest(request));
     Assert.Equal("Authorizer not found in the request", exception.Message);
+  }
+
+  [Fact]
+  public void GetRequiredConnectionIdFromRequest_ExtractsFromWebSocketRequest()
+  {
+    var expectedConnectionId = "im-a-connection-id";
+    var request = new APIGatewayProxyRequest
+    {
+      RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+      {
+        ConnectionId = expectedConnectionId
+      }
+    };
+
+    var result = ApiGatewayRequestParser.GetRequiredConnectionIdFromRequest(request);
+
+    Assert.Equal(expectedConnectionId, result);
+  }
+
+  [Fact]
+  public void GetRequiredConnectionIdFromRequest_ThrowsWhenNoConnectionId()
+  {
+    var request = new APIGatewayProxyRequest
+    {
+      RequestContext = new APIGatewayProxyRequest.ProxyRequestContext()
+    };
+
+    var exception = Assert.Throws<KeyNotFoundException>(() => ApiGatewayRequestParser.GetRequiredConnectionIdFromRequest(request));
+    Assert.Equal("Connection ID not found in the request", exception.Message);
+  }
+
+  [Fact]
+  public void GetRequiredConnectionAtFromRequest_ExtractsFromWebSocketRequest()
+  {
+    var connectedAtEpochMillis = 1738511121229;
+    var expectedConnectedAt = DateTime.Parse("2025-02-02T15:45:21.229Z").ToUniversalTime();
+    var request = new APIGatewayProxyRequest
+    {
+      RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+      {
+        ConnectedAt = connectedAtEpochMillis
+      }
+    };
+
+    var result = ApiGatewayRequestParser.GetConnectedAtFromRequest(request);
+
+    Assert.Equal(expectedConnectedAt, result);
+  }
+
+  [Fact]
+  public void GetRequiredConnectionAtFromRequest_ThrowsWhenNoConnectionAt()
+  {
+    var request = new APIGatewayProxyRequest
+    {
+      RequestContext = new APIGatewayProxyRequest.ProxyRequestContext()
+    };
+
+    var exception = Assert.Throws<KeyNotFoundException>(() => ApiGatewayRequestParser.GetRequiredConnectionIdFromRequest(request));
+    Assert.Equal("Connection ID not found in the request", exception.Message);
   }
 }
