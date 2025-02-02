@@ -10,17 +10,15 @@ public class ApiGatewayRequestParserTests
   public void GetRequiredPrincipalIdFromRequest_ExtractsAuthorizedRequest()
   {
     var expectedPrincipalId = "dj-jazzy-jeff";
+    var authorizerContext = new APIGatewayCustomAuthorizerContext
+    {
+      ["principalId"] = "dj-jazzy-jeff"
+    };
     var request = new APIGatewayProxyRequest
     {
       RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
       {
-        Authorizer = new APIGatewayCustomAuthorizerContext
-        {
-          Claims = new Dictionary<string, string>
-          {
-            ["principalId"] = expectedPrincipalId
-          }
-        }
+        Authorizer = authorizerContext
       }
     };
 
@@ -32,14 +30,15 @@ public class ApiGatewayRequestParserTests
   [Fact]
   public void GetRequiredPrincipalIdFromRequest_ThrowsWhenNoPrincipalId()
   {
+    var authorizerContext = new APIGatewayCustomAuthorizerContext
+    {
+      ["someOtherKey"] = "someOtherValue"
+    };
     var request = new APIGatewayProxyRequest
     {
       RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
       {
-        Authorizer = new APIGatewayCustomAuthorizerContext
-        {
-          Claims = []
-        }
+        Authorizer = authorizerContext
       }
     };
 
@@ -48,20 +47,17 @@ public class ApiGatewayRequestParserTests
   }
 
   [Fact]
-  public void GetRequiredPrincipalIdFromRequest_ThrowsWhenNoClaims()
+  public void GetRequiredPrincipalIdFromRequest_ThrowsWhenNoAuthorizer()
   {
     var request = new APIGatewayProxyRequest
     {
       RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
       {
-        Authorizer = new APIGatewayCustomAuthorizerContext
-        {
-          Claims = null
-        }
+        Authorizer = null
       }
     };
 
     var exception = Assert.Throws<KeyNotFoundException>(() => ApiGatewayRequestParser.GetRequiredPrincipalIdFromRequest(request));
-    Assert.Equal("Principal ID not found in the request", exception.Message);
+    Assert.Equal("Authorizer not found in the request", exception.Message);
   }
 }
