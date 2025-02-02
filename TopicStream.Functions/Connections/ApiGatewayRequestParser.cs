@@ -39,4 +39,12 @@ public static class ApiGatewayRequestParser
     }
     return DateTimeOffset.FromUnixTimeMilliseconds(connectedAt.Value).UtcDateTime;
   }
+
+  public static Connection GetAuthorizedWebSocketConnection(APIGatewayProxyRequest request)
+  {
+    var principalId = GetRequiredPrincipalIdFromRequest(request);
+    var connectionId = GetRequiredConnectionIdFromRequest(request);
+    var connectedAt = GetConnectedAtFromRequest(request);
+    return new Connection(principalId, connectionId, connectedAt);
+  }
 }

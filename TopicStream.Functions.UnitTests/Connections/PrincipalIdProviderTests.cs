@@ -5,16 +5,16 @@ using System.Linq;
 using Bogus;
 using TopicStream.Functions.Connections;
 
-public class UserIdProviderTests
+public class PrincipalIdProviderTests
 {
     [Fact]
     public void GetUserId_WhenCalledWithTheSameApiKeyMultipleTimes_ReturnsTheSameUserId()
     {
         var apiKey = "this-here-my-secret-dont-tell-nobody";
 
-        var providedId1 = UserIdProvider.GetUserId(apiKey);
-        var providedId2 = UserIdProvider.GetUserId(apiKey);
-        var providedId3 = UserIdProvider.GetUserId(apiKey);
+        var providedId1 = PrincipalIdProvider.GetPrincipalId(apiKey);
+        var providedId2 = PrincipalIdProvider.GetPrincipalId(apiKey);
+        var providedId3 = PrincipalIdProvider.GetPrincipalId(apiKey);
 
         Assert.Equal(providedId1, providedId2);
         Assert.Equal(providedId1, providedId3);
@@ -32,7 +32,7 @@ public class UserIdProviderTests
         });
         var apiKeys = apiKeyGenerator.Generate(100);
 
-        var userIds = apiKeys.Select(UserIdProvider.GetUserId);
+        var userIds = apiKeys.Select(PrincipalIdProvider.GetPrincipalId);
         var uniqueUserIds = new HashSet<string>(userIds);
 
         Assert.Equal(apiKeys.Count, uniqueUserIds.Count);

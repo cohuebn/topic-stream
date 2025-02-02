@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TopicStream.Configuration;
+namespace TopicStream.Functions.Configuration;
 
 public static class EnvironmentVariables
 {

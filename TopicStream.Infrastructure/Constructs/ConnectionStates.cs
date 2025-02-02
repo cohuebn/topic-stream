@@ -23,9 +23,9 @@ internal class ConnectionStates : Construct
   public ConnectionStates(Construct scope, string id, IConnectionStatesProps props) : base(scope, id)
   {
     // A timestamp attribute to support sorting by connection creation time
-    var connectionCreatedAtAttribute = new Attribute
+    var connectedAt = new Attribute
     {
-      Name = "ConnectionCreatedAt",
+      Name = "ConnectedAt",
       Type = AttributeType.STRING,
     };
 
@@ -39,20 +39,20 @@ internal class ConnectionStates : Construct
         Name = "ConnectionId",
         Type = AttributeType.STRING,
       },
-      SortKey = connectionCreatedAtAttribute,
+      SortKey = connectedAt,
       BillingMode = BillingMode.PAY_PER_REQUEST,
     });
 
     // Secondary index supports fast lookup by user id
     ConnectionStatesTable.AddGlobalSecondaryIndex(new GlobalSecondaryIndexProps
     {
-      IndexName = "UserIdIndex",
+      IndexName = "PrincipalIdIndex",
       PartitionKey = new Attribute
       {
-        Name = "UserId",
+        Name = "PrincipalId",
         Type = AttributeType.STRING,
       },
-      SortKey = connectionCreatedAtAttribute,
+      SortKey = connectedAt,
       ProjectionType = ProjectionType.ALL,
     });
   }

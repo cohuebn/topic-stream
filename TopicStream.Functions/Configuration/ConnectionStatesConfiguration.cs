@@ -1,6 +1,4 @@
-using TopicStream.Configuration;
-
-namespace TopicStream.Functions.Connections;
+namespace TopicStream.Functions.Configuration;
 
 /// <summary>
 /// Common configuration for updating connection states

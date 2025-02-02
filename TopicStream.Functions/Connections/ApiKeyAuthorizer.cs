@@ -86,7 +86,7 @@ class ApiKeyAuthorizer
     {
       return new APIGatewayCustomAuthorizerResponse
       {
-        PrincipalID = UserIdProvider.GetUserId(apiKey),
+        PrincipalID = PrincipalIdProvider.GetPrincipalId(apiKey),
         PolicyDocument = IamPolicyGenerator.GenerateAllowPolicy(request.MethodArn)
       };
     }
@@ -106,7 +106,7 @@ class ApiKeyAuthorizer
 
     return new APIGatewayCustomAuthorizerResponse
     {
-      PrincipalID = UserIdProvider.GetUserId(apiKey),
+      PrincipalID = PrincipalIdProvider.GetPrincipalId(apiKey),
       PolicyDocument = IamPolicyGenerator.GenerateAllowPolicy(request.MethodArn)
     };
   }

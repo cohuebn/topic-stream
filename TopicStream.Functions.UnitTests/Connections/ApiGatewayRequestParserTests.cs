@@ -120,4 +120,32 @@ public class ApiGatewayRequestParserTests
     var exception = Assert.Throws<KeyNotFoundException>(() => ApiGatewayRequestParser.GetRequiredConnectionIdFromRequest(request));
     Assert.Equal("Connection ID not found in the request", exception.Message);
   }
+
+  [Fact]
+  public void GetAuthorizedWebSocketRequest_ExtractsAllRequestDetails()
+  {
+    var expectedPrincipalId = "dj-jazzy-jeff";
+    var authorizerContext = new APIGatewayCustomAuthorizerContext
+    {
+      ["principalId"] = "dj-jazzy-jeff"
+    };
+    var expectedConnectionId = "im-a-connection-id";
+    var connectedAtEpochMillis = 1738511121229;
+    var expectedConnectedAt = DateTime.Parse("2025-02-02T15:45:21.229Z").ToUniversalTime();
+    var request = new APIGatewayProxyRequest
+    {
+      RequestContext = new APIGatewayProxyRequest.ProxyRequestContext
+      {
+        Authorizer = authorizerContext,
+        ConnectionId = expectedConnectionId,
+        ConnectedAt = connectedAtEpochMillis,
+      }
+    };
+
+    var result = ApiGatewayRequestParser.GetAuthorizedWebSocketConnection(request);
+
+    Assert.Equal(expectedPrincipalId, result.PrincipalId);
+    Assert.Equal(expectedConnectionId, result.ConnectionId);
+    Assert.Equal(expectedConnectedAt, result.ConnectedAt);
+  }
 }

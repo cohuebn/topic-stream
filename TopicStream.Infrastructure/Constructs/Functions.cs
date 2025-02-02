@@ -33,7 +33,7 @@ internal class ConnectionFunctions : Construct
     ConnectFunction = new Function(this, "Connect", new TopicStreamFunctionProps
     {
       FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "Connect"),
-      Handler = "TopicStream.Functions::TopicStream.Functions.Connections.Connection::Connect",
+      Handler = "TopicStream.Functions::TopicStream.Functions.Connections.ConnectionHandlers::Connect",
       Code = props.BundledCode,
       Environment = new Dictionary<string, string>
       {
@@ -45,7 +45,7 @@ internal class ConnectionFunctions : Construct
     DisconnectFunction = new Function(this, "Disconnect", new TopicStreamFunctionProps
     {
       FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "Disconnect"),
-      Handler = "TopicStream.Functions::TopicStream.Functions.Connections.Connection::Connect",
+      Handler = "TopicStream.Functions::TopicStream.Functions.Connections.ConnectionHandlers::Disconnect",
       Code = props.BundledCode,
       Environment = new Dictionary<string, string>
       {
