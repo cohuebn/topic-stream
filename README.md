@@ -15,6 +15,20 @@ To develop, build, and deploy this application, you will need the following on y
   bundling source code for Lambda deployment. Additionally, the integration tests use
   Docker to spin up Localstack resources
 
+### IDEs
+
+This solution was developed in VS Code, but an attemp was made to also make it Visual Studio compatible.
+Launch configurations for debugging have only been setup for VS Code.
+
+### Project Structure
+
+This solution is organized into the following projects:
+
+- [TopicStream.FunctionalTests](./TopicStream.FunctionalTests/): These are functional tests to test a deployed instance of
+  the application end-to-end. They connect to an actual deployed instance in AWS
+- [TopicStream.Functions](./TopicStream.Functions/): This is the source code run by Lambdas within the TopicStream system
+- [TopicStream.Infrastructure](./TopicStream.Infrastructure/): This project is responsible for managing/deploying the infrastructure used to run the TopicStream system into AWS
+
 ### Deploying to AWS
 
 This system is comprised of a couple of AWS CDK stacks:
@@ -37,3 +51,40 @@ In the last command above, you can deploy a specific stack by replacing `--all` 
 
 - Deploy the `AccountStack` stack: `cdk deploy AccountStack --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
 - Deploy the `TopicStream` stack: `cdk deploy TopicStream --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
+
+## Running Functional Tests
+
+This section describes how to run the [functional tests](./TopicStream.FunctionalTests/) against
+a deployed version of the API.
+
+### Required Environment Variables
+
+To run these tests, you'll need to provide environment variables to:
+
+1. Connect to a deployed system
+2. Provide API key values; the tests will then create, use, and dispose of these keys
+
+In order to document the required environment variables, an [example.env](./example.env) file
+has been created. These aren't actually used by the tests, but just there for documenting
+needed environment variables. The most important variables are as follows:
+
+| Variable name                     | Purpose                                                    |
+| --------------------------------- | ---------------------------------------------------------- |
+| TOPIC_STREAM_URL                  | The web socket url to use to connect to the running system |
+| TOPIC_STREAM_SUBSCRIBER_1_API_KEY | The API key value for subscriber 1 used by tests           |
+| TOPIC_STREAM_SUBSCRIBER_2_API_KEY | The API key value for subscriber 2 used by tests           |
+| TOPIC_STREAM_PUBLISHER_API_KEY    | The API key value for the publisher used by tests          |
+
+### Running the Tests
+
+One way to run the functional tests is to provide the environment variables directly to the
+tests. This section documents how to do that:
+
+1. Open a terminal session using the root directory of this solution as it's current working directory
+1. Ensure your terminal is using the correct AWS credentials/account for deployment: `aws sts get-caller-identity`. The IAM
+   user/role used needs permission to create and delete API keys used by the test
+1. Run the tests, providing all relevant environment variables: `
+
+Additionally, a launch configuration named "Debug Functional Tests" has been created for debugging
+the tests. In order to use it, you'll want to update the environment variables in that configuration
+to match your deployed target environment.

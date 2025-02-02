@@ -26,14 +26,14 @@ internal class TopicStreamStack : Stack
     var connectFunction = new Function(this, "Connect", new TopicStreamFunctionProps
     {
       FunctionName = $"{id}-Connect",
-      Handler = "TopicStream.Functions::TopicStream.Functions.ConnectionManager::Connect",
+      Handler = "TopicStream.Functions::TopicStream.Functions.Connection::Connect",
       Code = props.BundledCode,
     });
 
     var disconnectFunction = new Function(this, "Disconnect", new TopicStreamFunctionProps
     {
       FunctionName = $"{id}-Disconnect",
-      Handler = "TopicStream.Functions::TopicStream.Functions.ConnectionManager::Connect",
+      Handler = "TopicStream.Functions::TopicStream.Functions.Connection::Connect",
       Code = props.BundledCode,
     });
 

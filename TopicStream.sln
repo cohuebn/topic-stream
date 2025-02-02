@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.Functions", "TopicStream.Functions\TopicStream.Functions.csproj", "{A1EAF6CA-E05E-4A6F-8CC1-6B6F3B21033C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopicStream.FunctionalTests", "TopicStream.FunctionalTests\TopicStream.FunctionalTests.csproj", "{0C885877-6AF1-4FDA-9192-887131D6373C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{A1EAF6CA-E05E-4A6F-8CC1-6B6F3B21033C}.Release|x64.Build.0 = Release|Any CPU
 		{A1EAF6CA-E05E-4A6F-8CC1-6B6F3B21033C}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1EAF6CA-E05E-4A6F-8CC1-6B6F3B21033C}.Release|x86.Build.0 = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|x64.Build.0 = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Debug|x86.Build.0 = Debug|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|x64.ActiveCfg = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|x64.Build.0 = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|x86.ActiveCfg = Release|Any CPU
+		{0C885877-6AF1-4FDA-9192-887131D6373C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

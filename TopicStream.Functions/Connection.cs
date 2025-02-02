@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 
@@ -9,7 +10,7 @@ namespace TopicStream.Functions;
 /// <summary>
 /// Object responsible for managing user connections to the application
 /// </summary>
-class ConnectionManager
+class Connection
 {
   /// <summary>
   /// Register a user connecting to the application
@@ -19,7 +20,7 @@ class ConnectionManager
   /// <returns>A success response after processing the connection request</returns>
   public static APIGatewayProxyResponse Connect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogDebug($"Connection request received {request}", request);
+    context.Logger.LogDebug("Connection request received {@request}", request);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,
@@ -35,7 +36,7 @@ class ConnectionManager
   /// <returns>A success response after processing the disconnection request</returns>
   public static APIGatewayProxyResponse Disconnect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogDebug($"Disconnection request received {request}", request);
+    context.Logger.LogDebug("Disconnection request received {@request}", request);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,

@@ -15,7 +15,6 @@ internal class TopicStreamFunctionProps : FunctionProps
     LoggingFormat = Amazon.CDK.AWS.Lambda.LoggingFormat.JSON;
     ApplicationLogLevelV2 = Amazon.CDK.AWS.Lambda.ApplicationLogLevel.INFO;
     // Speeds up cold-start time compared to 256MB default, while not going too crazy with overprovisioning
-    // just to get a faster cold-start
     MemorySize = 512;
   }
 }
