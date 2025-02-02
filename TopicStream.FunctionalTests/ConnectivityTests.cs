@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using TopicStream.FunctionalTests.ApiKeys;
 using TopicStream.FunctionalTests.Configuration;
+using TopicStream.FunctionalTests.WebSockets;
 
 namespace TopicStream.FunctionalTests;
 
@@ -37,17 +38,24 @@ public class ConnectivityTests(ApiKeyProvisioner apiKeyProvisioner)
     }
 
     [Fact]
-    public async Task AuthorizedUser_CanConnect()
+    public async Task AuthorizedUser_CanConnect_AndDisconnect()
     {
+        // This is a simple proof-of-life test to ensure the user can connect and disconnect
+        // The assertion is silly, but this is a good sanity check that web socket API is allowing connections.
+        // It validates:
+        // 1. Auth is working as expected for a valid user
+        // 2. The user only needs an API key to connect; they can disconnect without the key
+
         var testCancellation = TestContext.Current.CancellationToken;
         using ClientWebSocket user = new();
-        user.Options.SetRequestHeader("x-api-key", _testApiKeys.Subscriber1.ApiKey);
-        await user.ConnectAsync(TestConfiguration.GetUri(), testCancellation);
+        await user.ConnectAsync(
+            TestConfiguration.GetUri(),
+            OneTimeApiKeyMessageInvokerFactory.Create(_testApiKeys.Subscriber1.ApiKey),
+            testCancellation
+        );
 
         await user.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", testCancellation);
 
-        // This is a simple proof-of-life test to ensure the user can connect and disconnect
-        // The assertion is silly, but this is a good sanity check that web socket API is allowing connections
         Assert.True(true, "User can connect and disconnect");
     }
 }

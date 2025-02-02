@@ -17,7 +17,8 @@ class Connection
   /// <returns>A success response after processing the connection request</returns>
   public static APIGatewayProxyResponse Connect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogTrace("Connection request received {@request}", request);
+    var principal = ApiGatewayRequestParser.GetRequiredPrincipalIdFromRequest(request);
+    context.Logger.LogDebug("Connection request received {principal}", principal);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,
@@ -33,7 +34,8 @@ class Connection
   /// <returns>A success response after processing the disconnection request</returns>
   public static APIGatewayProxyResponse Disconnect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogTrace("Disconnection request received {@request}", request);
+    var principal = ApiGatewayRequestParser.GetRequiredPrincipalIdFromRequest(request);
+    context.Logger.LogDebug("Disconnection request received {principal}", principal);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,

@@ -32,7 +32,6 @@ public class UserIdProviderTests
         });
         var apiKeys = apiKeyGenerator.Generate(100);
 
-        var userIdProvider = new UserIdProvider();
         var userIds = apiKeys.Select(UserIdProvider.GetUserId);
         var uniqueUserIds = new HashSet<string>(userIds);
 
