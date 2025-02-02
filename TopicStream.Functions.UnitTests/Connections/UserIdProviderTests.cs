@@ -14,8 +14,10 @@ public class UserIdProviderTests
 
         var providedId1 = UserIdProvider.GetUserId(apiKey);
         var providedId2 = UserIdProvider.GetUserId(apiKey);
+        var providedId3 = UserIdProvider.GetUserId(apiKey);
 
         Assert.Equal(providedId1, providedId2);
+        Assert.Equal(providedId1, providedId3);
     }
 
     [Fact]
