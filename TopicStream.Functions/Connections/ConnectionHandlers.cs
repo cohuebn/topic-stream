@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using System.Threading.Tasks;
 using TopicStream.Functions.Configuration;
+using TopicStream.Functions.Dynamo;
 
 namespace TopicStream.Functions.Connections;
 
@@ -51,7 +52,7 @@ class ConnectionHandlers
   {
     var connection = ApiGatewayRequestParser.GetAuthorizedWebSocketConnection(request);
     context.Logger.LogDebug("Disconnect request received: {@connection}", connection);
-    await _table.DeleteItemAsync(connection.ConnectionId, DynamoConnectionConverter.ToConnectedAtString(connection.ConnectedAt));
+    await _table.DeleteItemAsync(connection.ConnectionId, DynamoConverters.ToDynamoDate(connection.ConnectedAt));
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,

@@ -29,6 +29,11 @@ internal class TopicStreamStack : Stack
       ResourcePrefix = props.ResourcePrefix,
     });
 
+    var subscriptions = new Subscriptions(this, "Subscriptions", new SubscriptionProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+    });
+
     var authorizerFunction = new AuthorizerFunction(this, "Authorizer", new AuthorizerFunctionProps
     {
       Stack = this,
@@ -44,12 +49,29 @@ internal class TopicStreamStack : Stack
       ConnectionStatesTable = connectionStates.ConnectionStatesTable,
     });
 
+    var unknownActionFunction = new Function(this, "UnknownAction", new TopicStreamFunctionProps
+    {
+      FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "UnknownAction"),
+      Handler = "TopicStream.Functions::TopicStream.Functions.Errors.ActionNotFoundHandlers::HandleUnknownAction",
+      Code = props.BundledCode,
+    });
+
+    var subscriptionFunctions = new SubscriptionFunctions(this, "SubscriptionFunctions", new SubscriptionFunctionsProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+      BundledCode = props.BundledCode,
+      SubscriptionsTable = subscriptions.SubscriptionsTable,
+    });
+
     _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
     {
       ApiName = $"{id}-Api",
       AuthorizeFunction = authorizerFunction,
       ConnectFunction = connectionFunctions.ConnectFunction,
       DisconnectFunction = connectionFunctions.DisconnectFunction,
+      UnknownActionFunction = unknownActionFunction,
+      SubscribeFunction = subscriptionFunctions.SubscribeFunction,
+      UnsubscribeFunction = subscriptionFunctions.UnsubscribeFunction,
     });
   }
 }

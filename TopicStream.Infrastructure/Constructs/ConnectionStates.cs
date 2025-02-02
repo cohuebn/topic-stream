@@ -43,7 +43,7 @@ internal class ConnectionStates : Construct
       BillingMode = BillingMode.PAY_PER_REQUEST,
     });
 
-    // Secondary index supports fast lookup by user id
+    // Secondary index supports fast lookup by principal id
     ConnectionStatesTable.AddGlobalSecondaryIndex(new GlobalSecondaryIndexProps
     {
       IndexName = "PrincipalIdIndex",

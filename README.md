@@ -102,7 +102,7 @@ tests. This section documents how to do that:
 1. Open a terminal session using the root directory of this solution as it's current working directory
 1. Ensure your terminal is using the correct AWS credentials/account for deployment: `aws sts get-caller-identity`. The IAM
    user/role used needs permission to create and delete API keys used by the test
-1. Run the tests, providing all relevant environment variables: `
+1. Run the tests, providing all relevant environment variables. This is a doozy of a command, but allows you to inject environment variables directly into the command: `dotnet test TopicStream.FunctionalTests --environment 'TOPIC_STREAM_SUBSCRIBER_1_API_KEY=<subscriber_1_key>' --environment 'TOPIC_STREAM_SUBSCRIBER_2_API_KEY=<subscriber_2_key>' --environment 'TOPIC_STREAM_PUBLISHER_API_KEY=<publisher_key>' --environment 'TOPIC_STREAM_URL=<deployed_app_wss_url>`
 
 Additionally, a launch configuration named "Debug Functional Tests" has been created for debugging
 the tests. In order to use it, you'll want to update the environment variables in that configuration

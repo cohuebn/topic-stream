@@ -12,6 +12,9 @@ internal interface ITopicStreamApiGatewayProps
   Function AuthorizeFunction { get; }
   Function ConnectFunction { get; }
   Function DisconnectFunction { get; }
+  Function SubscribeFunction { get; }
+  Function UnsubscribeFunction { get; }
+  Function UnknownActionFunction { get; }
 }
 
 internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
@@ -20,6 +23,9 @@ internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
   public required Function AuthorizeFunction { get; init; }
   public required Function ConnectFunction { get; init; }
   public required Function DisconnectFunction { get; init; }
+  public required Function SubscribeFunction { get; init; }
+  public required Function UnsubscribeFunction { get; init; }
+  public required Function UnknownActionFunction { get; init; }
 }
 
 /// <summary>
@@ -43,6 +49,7 @@ internal class TopicStreamApiGateway : Construct
       IdentitySource = ["route.request.header.x-api-key"],
     });
 
+    // Connection routes
     api.AddRoute("$connect", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("ConnectIntegration", props.ConnectFunction),
@@ -51,6 +58,22 @@ internal class TopicStreamApiGateway : Construct
     api.AddRoute("$disconnect", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("DisconnectIntegration", props.DisconnectFunction)
+    });
+
+    //Unknown actions route
+    api.AddRoute("$default", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("UnknownActionIntegration", props.UnknownActionFunction)
+    });
+
+    // Subscription routes
+    api.AddRoute("subscribe", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("SubscribeIntegration", props.SubscribeFunction),
+    });
+    api.AddRoute("unsubscribe", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("UnsubscribeIntegration", props.UnsubscribeFunction),
     });
 
     // For this assessment, we only need a single stage; in a real production system, we might have multiple stages
