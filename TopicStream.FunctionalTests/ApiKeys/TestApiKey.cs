@@ -11,7 +11,7 @@ public record class TestApiKey(string Id, string Name, string ApiKey);
 /// <summary>
 /// An object that makes getting a particular API key easier
 /// </summary>
-/// <param name="Subscriber1">The API key for the first topic subscriber for our tests</param>
-/// <param name="Subscriber2">The API key for the first topic subscriber for our tests</param>
-/// <param name="Publisher">The API key for the topic publisher for our tests</param>
+/// <param name="Subscriber1">The API key for the first topic subscriber for tests</param>
+/// <param name="Subscriber2">The API key for the first topic subscriber for tests</param>
+/// <param name="Publisher">The API key for the topic publisher for tests</param>
 public record class TestApiKeys(TestApiKey Subscriber1, TestApiKey Subscriber2, TestApiKey Publisher);

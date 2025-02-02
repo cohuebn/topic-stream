@@ -27,6 +27,7 @@ This solution is organized into the following projects:
 - [TopicStream.FunctionalTests](./TopicStream.FunctionalTests/): These are functional tests to test a deployed instance of
   the application end-to-end. They connect to an actual deployed instance in AWS
 - [TopicStream.Functions](./TopicStream.Functions/): This is the source code run by Lambdas within the TopicStream system
+- [TopicStream.Functions.UnitTests](./TopicStream.Functions.UnitTests/): These are unit tests of Lambda function code
 - [TopicStream.Infrastructure](./TopicStream.Infrastructure/): This project is responsible for managing/deploying the infrastructure used to run the TopicStream system into AWS
 
 ### Deploying to AWS
@@ -59,6 +60,14 @@ steps as the above section, except the last one. Instead, run:
 
 - Destroy all stacks: `cdk destroy --all --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
 - Destroy the TopicStream stack: `cdk destroy TopicStream --app "dotnet run --project TopicStream.Infrastructure -- --functions-project TopicStream.Functions"`
+
+## Running Unit Tests
+
+While priority was placed on developing functional tests, there are unit tests for some of the Lambda source code.
+To run these unit tests, take the following steps:
+
+1. Open a terminal session using the root directory of this solution as it's current working directory
+2. Run the tests: `dotnet test TopicStream.Functions.UnitTests`
 
 ## Running Functional Tests
 
