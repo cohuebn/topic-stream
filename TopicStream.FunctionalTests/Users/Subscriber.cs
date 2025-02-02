@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TopicStream.FunctionalTests.ApiKeys;
-using TopicStream.FunctionalTests.Configuration;
-using TopicStream.FunctionalTests.WebSockets;
 using TopicStream.Functions.Messages;
 
 namespace TopicStream.FunctionalTests.Users;
@@ -18,77 +18,84 @@ namespace TopicStream.FunctionalTests.Users;
 /// 2. Waits for messages
 /// 3. Unsubscribes from topics
 /// </summary>
-public class Subscriber : IAsyncDisposable, IDisposable
+public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) : User(apiKey, cancellationToken)
 {
-  private readonly TestApiKey _apiKey;
-  private readonly ClientWebSocket _wsClient = new();
   private readonly List<string> _subscribedTopics = [];
+  private readonly ReceivedMessages _receivedMessages = [];
 
-  public Subscriber(TestApiKey apiKey)
-  {
-    _apiKey = apiKey;
-  }
-
-  public async Task ConnectAsync(CancellationToken cancellationToken)
-  {
-    await _wsClient.ConnectAsync(
-        TestConfiguration.GetUri(),
-        OneTimeApiKeyMessageInvokerFactory.Create(_apiKey.ApiKey),
-        cancellationToken
-    );
-  }
-
-  public async Task SendAsync<T>(T message, CancellationToken cancellationToken) where T : Message
-  {
-    await _wsClient.SendAsync(
-        MessagePreparer.GetBytes(message),
-        WebSocketMessageType.Text,
-        true,
-        cancellationToken
-    );
-  }
-
-  public async Task SubscribeAsync(string topic, CancellationToken cancellationToken)
+  public async Task SubscribeAsync(string topic)
   {
     var subscribeMessage = new SubscribeMessage(topic);
-    await SendAsync(subscribeMessage, cancellationToken);
+    await SendAsync(subscribeMessage);
     _subscribedTopics.Add(topic);
   }
 
-  public async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
+  public async Task UnsubscribeAsync(string topic)
   {
     var unsubscribeMessage = new UnsubscribeMessage(topic);
-    await SendAsync(unsubscribeMessage, cancellationToken);
+    await SendAsync(unsubscribeMessage);
     _subscribedTopics.Remove(topic);
   }
 
-  public async Task UnsubscribeFromAllTopicsAsync(CancellationToken cancellationToken)
+  public async Task UnsubscribeFromAllTopicsAsync()
   {
-    await Task.WhenAll(_subscribedTopics.Select(topic => UnsubscribeAsync(topic, cancellationToken)));
+    var topicsToUnsubscribeFrom = _subscribedTopics.ToList();
+    foreach (var topic in topicsToUnsubscribeFrom)
+    {
+      await UnsubscribeAsync(topic);
+    }
   }
 
-  public async Task DisconnectAsync(CancellationToken cancellationToken)
+  private async Task ReceiveMessagesAsync(int expectedMessageCount)
   {
-    await _wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", cancellationToken);
+    // 4 KB buffer is good enough for these tests
+    var buffer = new byte[1024 * 4];
+
+    while (_wsClient.State == WebSocketState.Open && _receivedMessages.Count < expectedMessageCount)
+    {
+      var result = await _wsClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+      if (result.MessageType == WebSocketMessageType.Close)
+      {
+        await DisconnectAsync();
+        break;
+      }
+
+      var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+      if (message is not null)
+      {
+        var parsedMessage = JsonSerializer.Deserialize<PublishMessage>(message);
+        if (parsedMessage is not null)
+        {
+          _receivedMessages.AddMessage(parsedMessage.Topic, parsedMessage.Message);
+        }
+      }
+    }
+  }
+
+  /// <summary>
+  /// Wait for the expected number of messages to be received or until the timeout is reached
+  /// </summary>
+  /// <param name="expectedMessageCount">How many messages are expected?</param>
+  /// <param name="timeout">The timeout to wait for messages</param>
+  /// <returns></returns>
+  public async Task WaitForMessagesAsync(int expectedMessageCount, TimeSpan? timeout)
+  {
+    var defaultedTimeout = timeout ?? TimeSpan.FromSeconds(10);
+    var messageReceiver = ReceiveMessagesAsync(expectedMessageCount);
+    await Task.WhenAny(messageReceiver, Task.Delay(defaultedTimeout));
   }
 
   /// <summary>
   /// Upon disposal, ensure any topics are unsubscribed from and the socket is closed
   /// </summary>
   /// <returns></returns>
-  /// <exception cref="NotImplementedException"></exception>
-  public async ValueTask DisposeAsync()
+  public override async ValueTask DisposeAsync()
   {
     if (_wsClient.State == WebSocketState.Open)
     {
-      await UnsubscribeFromAllTopicsAsync(CancellationToken.None);
-      await DisconnectAsync(CancellationToken.None);
+      await UnsubscribeFromAllTopicsAsync();
     }
-    GC.SuppressFinalize(this);
-  }
-
-  public void Dispose()
-  {
-    DisposeAsync().AsTask().Wait();
+    await base.DisposeAsync();
   }
 }

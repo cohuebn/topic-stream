@@ -5,10 +5,8 @@ using Constructs;
 
 namespace TopicStream.Infrastructure.Constructs;
 
-internal interface ISubscriptionFunctionsProps
+internal interface ISubscriptionFunctionsProps : ILambdaInitializerProps
 {
-  public string? ResourcePrefix { get; }
-  public AssetCode BundledCode { get; }
   public Table SubscriptionsTable { get; }
 }
 

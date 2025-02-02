@@ -14,6 +14,7 @@ internal interface ITopicStreamApiGatewayProps
   Function DisconnectFunction { get; }
   Function SubscribeFunction { get; }
   Function UnsubscribeFunction { get; }
+  Function PublishFunction { get; }
   Function UnknownActionFunction { get; }
 }
 
@@ -25,6 +26,7 @@ internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
   public required Function DisconnectFunction { get; init; }
   public required Function SubscribeFunction { get; init; }
   public required Function UnsubscribeFunction { get; init; }
+  public required Function PublishFunction { get; init; }
   public required Function UnknownActionFunction { get; init; }
 }
 
@@ -35,9 +37,12 @@ internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
 /// </summary>
 internal class TopicStreamApiGateway : Construct
 {
+  public WebSocketApi Api { get; }
+  public WebSocketStage LiveStage { get; }
+
   public TopicStreamApiGateway(Construct scope, string id, ITopicStreamApiGatewayProps props) : base(scope, id)
   {
-    var api = new WebSocketApi(this, "Api", new WebSocketApiProps
+    Api = new WebSocketApi(this, "Api", new WebSocketApiProps
     {
       ApiName = props.ApiName,
       RouteSelectionExpression = "$request.body.action",
@@ -50,40 +55,46 @@ internal class TopicStreamApiGateway : Construct
     });
 
     // Connection routes
-    api.AddRoute("$connect", new WebSocketRouteOptions
+    Api.AddRoute("$connect", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("ConnectIntegration", props.ConnectFunction),
       Authorizer = authorizer,
     });
-    api.AddRoute("$disconnect", new WebSocketRouteOptions
+    Api.AddRoute("$disconnect", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("DisconnectIntegration", props.DisconnectFunction)
     });
 
     //Unknown actions route
-    api.AddRoute("$default", new WebSocketRouteOptions
+    Api.AddRoute("$default", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("UnknownActionIntegration", props.UnknownActionFunction)
     });
 
     // Subscription routes
-    api.AddRoute("subscribe", new WebSocketRouteOptions
+    Api.AddRoute("subscribe", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("SubscribeIntegration", props.SubscribeFunction),
     });
-    api.AddRoute("unsubscribe", new WebSocketRouteOptions
+    Api.AddRoute("unsubscribe", new WebSocketRouteOptions
     {
       Integration = new WebSocketLambdaIntegration("UnsubscribeIntegration", props.UnsubscribeFunction),
     });
 
+    // Topic messages
+    Api.AddRoute("publish", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("PublishIntegration", props.PublishFunction),
+    });
+
     // For this assessment, we only need a single stage; in a real production system, we might have multiple stages
     // based on requirements.
-    _ = new WebSocketStage(this, "LiveStage", new WebSocketStageProps
+    LiveStage = new WebSocketStage(this, "LiveStage", new WebSocketStageProps
     {
       StageName = "live",
       Description = "The live, publicly accessible stage of the API",
       AutoDeploy = true,
-      WebSocketApi = api,
+      WebSocketApi = Api,
     });
   }
 }

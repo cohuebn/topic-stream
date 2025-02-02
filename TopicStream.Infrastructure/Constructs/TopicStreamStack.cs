@@ -4,11 +4,7 @@ using Constructs;
 
 namespace TopicStream.Infrastructure.Constructs;
 
-internal interface ITopicStreamStackProps : IStackProps
-{
-  public string? ResourcePrefix { get; }
-  public AssetCode BundledCode { get; }
-}
+internal interface ITopicStreamStackProps : IStackProps, ILambdaInitializerProps { }
 
 internal class TopicStreamStackProps : StackProps, ITopicStreamStackProps
 {
@@ -30,6 +26,11 @@ internal class TopicStreamStack : Stack
     });
 
     var subscriptions = new Subscriptions(this, "Subscriptions", new SubscriptionProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+    });
+
+    var topicMessages = new TopicMessagesQueue(this, "MessagesQueue", new MessagesQueueProps
     {
       ResourcePrefix = props.ResourcePrefix,
     });
@@ -63,7 +64,14 @@ internal class TopicStreamStack : Stack
       SubscriptionsTable = subscriptions.SubscriptionsTable,
     });
 
-    _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
+    var topicMessageFunctions = new TopicMessageFunctions(this, "TopicMessageFunctions", new TopicMessageFunctionsProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+      BundledCode = props.BundledCode,
+      TopicMessageQueue = topicMessages.Queue
+    });
+
+    var apiGateway = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
     {
       ApiName = $"{id}-Api",
       AuthorizeFunction = authorizerFunction,
@@ -72,6 +80,15 @@ internal class TopicStreamStack : Stack
       UnknownActionFunction = unknownActionFunction,
       SubscribeFunction = subscriptionFunctions.SubscribeFunction,
       UnsubscribeFunction = subscriptionFunctions.UnsubscribeFunction,
+      PublishFunction = topicMessageFunctions.PublishFunction,
+    });
+
+    _ = new BroadcastFunctions(this, "BroadcastFunctions", new BroadcastFunctionsProps
+    {
+      ResourcePrefix = props.ResourcePrefix,
+      BundledCode = props.BundledCode,
+      TopicMessageQueue = topicMessages.Queue,
+      BroadcastCallbackUrl = apiGateway.LiveStage.CallbackUrl
     });
   }
 }

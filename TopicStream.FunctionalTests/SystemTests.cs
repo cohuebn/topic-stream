@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using TopicStream.FunctionalTests.ApiKeys;
 using TopicStream.FunctionalTests.Configuration;
 using TopicStream.FunctionalTests.Users;
-using TopicStream.FunctionalTests.WebSockets;
 using TopicStream.Functions.Messages;
 
 namespace TopicStream.FunctionalTests;
@@ -53,10 +52,10 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         // 2. The user only needs an API key to connect; they can disconnect without the key
 
         var testCancellation = TestContext.Current.CancellationToken;
-        using Subscriber subscriber = new(_testApiKeys.Subscriber1);
-        await subscriber.ConnectAsync(testCancellation);
+        using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber.ConnectAsync();
 
-        await subscriber.DisconnectAsync(testCancellation);
+        await subscriber.DisconnectAsync();
 
         Assert.True(true, "User can connect and disconnect");
     }
@@ -65,13 +64,13 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
     public async Task UserSendingMessageToUnknownAction_CanStillCloseConnection()
     {
         var testCancellation = TestContext.Current.CancellationToken;
-        using Subscriber subscriber = new(_testApiKeys.Subscriber1);
-        await subscriber.ConnectAsync(testCancellation);
+        using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber.ConnectAsync();
 
         var unknownActionMessage = new Message("what?!");
-        await subscriber.SendAsync(unknownActionMessage, testCancellation);
+        await subscriber.SendAsync(unknownActionMessage);
 
-        await subscriber.DisconnectAsync(testCancellation);
+        await subscriber.DisconnectAsync();
 
         Assert.True(true, "User can connect and disconnect even after sending unknown action");
     }
@@ -86,16 +85,21 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
     public async Task AuthorizedUser_CanReceiveMessagesOnSubscribedTopic()
     {
         var testCancellation = TestContext.Current.CancellationToken;
-        using Subscriber subscriber = new(_testApiKeys.Subscriber1);
-        await subscriber.ConnectAsync(testCancellation);
+        using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber.ConnectAsync();
 
         var topic = $"test-topic-{Guid.NewGuid()}";
-        await subscriber.SubscribeAsync(topic, testCancellation);
+        await subscriber.SubscribeAsync(topic);
+
+        using Publisher publisher = new(_testApiKeys.Publisher, testCancellation);
+        await publisher.ConnectAsync();
+        await publisher.Publish(topic, "Can you see me?");
 
         var unsubscribeMessage = new SubscribeMessage(topic);
-        await subscriber.UnsubscribeAsync(topic, testCancellation);
+        await subscriber.UnsubscribeAsync(topic);
 
-        await subscriber.DisconnectAsync(testCancellation);
+        await publisher.DisconnectAsync();
+        await subscriber.DisconnectAsync();
 
         Assert.True(true, "User can subscribe");
     }

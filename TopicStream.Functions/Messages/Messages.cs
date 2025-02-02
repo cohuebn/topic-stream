@@ -1,5 +1,3 @@
-using System;
-
 namespace TopicStream.Functions.Messages;
 
 /// <summary>
@@ -19,3 +17,10 @@ public record SubscribeMessage(string Topic) : Message("subscribe");
 /// </summary>
 /// <param name="Topic">The name of the topic to unsubscribe from</param>
 public record UnsubscribeMessage(string Topic) : Message("unsubscribe");
+
+/// <summary>
+/// A message to publish to a topic
+/// </summary>
+/// <param name="Topic">The name of the topic to publish to</param>
+/// <param name="Message">The message to publish</param>
+public record PublishMessage(string Topic, string Message) : Message("publish");

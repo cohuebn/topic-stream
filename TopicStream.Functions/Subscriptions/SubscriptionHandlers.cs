@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
@@ -7,7 +6,6 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using TopicStream.Functions.Configuration;
 using TopicStream.Functions.Connections;
-using TopicStream.Functions.Dynamo;
 using TopicStream.Functions.Messages;
 
 namespace TopicStream.Functions.Subscriptions;
@@ -27,22 +25,6 @@ class SubscriptionHandlers
     _table = Table.LoadTable(_dynamoClient, SubscriptionsConfiguration.SubscriptionsTableName);
   }
 
-  private bool TryGetSubscriptionMessage(APIGatewayProxyRequest request, ILambdaContext context, out SubscribeMessage? subscriptionMessage)
-  {
-    subscriptionMessage = JsonSerializer.Deserialize<SubscribeMessage>(request.Body, MessageSerializerOptions.Standard);
-    if (subscriptionMessage is null)
-    {
-      context.Logger.LogWarning(
-        "Invalid subscription message: Connection {@connection}, Message: {message}",
-        ApiGatewayRequestParser.GetAuthorizedWebSocketConnection(request),
-        request.Body
-      );
-      subscriptionMessage = null;
-      return false;
-    }
-    return true;
-  }
-
   /// <summary>
   /// Subscribe the calling user to the requested topic
   /// </summary>
@@ -52,7 +34,10 @@ class SubscriptionHandlers
   public async Task<APIGatewayProxyResponse> Subscribe(APIGatewayProxyRequest request, ILambdaContext context)
   {
     var connection = ApiGatewayRequestParser.GetAuthorizedWebSocketConnection(request);
-    if (!TryGetSubscriptionMessage(request, context, out var subscriptionMessage) || subscriptionMessage is null)
+    if (
+      !RequestMessageParser.TryGetMessage<SubscribeMessage>(request, context, out var subscriptionMessage) ||
+      subscriptionMessage is null
+    )
     {
       return new APIGatewayProxyResponse { StatusCode = 400, Body = "Invalid subscription message" };
     }
@@ -85,7 +70,7 @@ class SubscriptionHandlers
   public async Task<APIGatewayProxyResponse> Unsubscribe(APIGatewayProxyRequest request, ILambdaContext context)
   {
     var connection = ApiGatewayRequestParser.GetAuthorizedWebSocketConnection(request);
-    if (!TryGetSubscriptionMessage(request, context, out var subscriptionMessage) || subscriptionMessage is null)
+    if (!RequestMessageParser.TryGetMessage<UnsubscribeMessage>(request, context, out var subscriptionMessage) || subscriptionMessage is null)
     {
       return new APIGatewayProxyResponse { StatusCode = 400, Body = "Invalid subscription message" };
     }
