@@ -10,9 +10,10 @@ public static class TestConfiguration
     return configValue is null ? throw new InvalidOperationException($"{variableName} environment variable must be set to run these tests") : configValue;
   }
 
-  public static string GetUrl()
+  public static Uri GetUri()
   {
-    return GetRequiredEnvironmentVariable("TOPIC_STREAM_URL");
+    var configValue = GetRequiredEnvironmentVariable("TOPIC_STREAM_URL");
+    return new Uri(configValue);
   }
 
   public static string GetSubscriber1ApiKey()

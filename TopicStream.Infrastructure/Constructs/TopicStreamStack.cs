@@ -1,4 +1,5 @@
 using Amazon.CDK;
+using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
@@ -20,9 +21,16 @@ internal class TopicStreamStackProps : StackProps, ITopicStreamStackProps
 /// </summary>
 internal class TopicStreamStack : Stack
 {
-
   public TopicStreamStack(Construct scope, string id, ITopicStreamStackProps props) : base(scope, id, props)
   {
+    var authorizerFunction = new AuthorizerFunction(this, "Authorizer", new AuthorizerFunctionProps
+    {
+      Stack = this,
+      FunctionName = $"{id}-Authorizer",
+      Handler = "TopicStream.Functions::TopicStream.Functions.ApiKeyAuthorizer::Authorize",
+      Code = props.BundledCode,
+    });
+
     var connectFunction = new Function(this, "Connect", new TopicStreamFunctionProps
     {
       FunctionName = $"{id}-Connect",
@@ -40,6 +48,7 @@ internal class TopicStreamStack : Stack
     _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps
     {
       ApiName = $"{id}-Api",
+      AuthorizeFunction = authorizerFunction,
       ConnectFunction = connectFunction,
       DisconnectFunction = disconnectFunction,
     });

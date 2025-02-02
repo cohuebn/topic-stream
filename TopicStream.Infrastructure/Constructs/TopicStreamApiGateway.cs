@@ -1,7 +1,6 @@
-using System;
-using System.Linq;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.Lambda;
+using Amazon.CDK.AwsApigatewayv2Authorizers;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
@@ -10,6 +9,7 @@ namespace TopicStream.Infrastructure.Constructs;
 internal interface ITopicStreamApiGatewayProps
 {
   string ApiName { get; }
+  Function AuthorizeFunction { get; }
   Function ConnectFunction { get; }
   Function DisconnectFunction { get; }
 }
@@ -17,6 +17,7 @@ internal interface ITopicStreamApiGatewayProps
 internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
 {
   public required string ApiName { get; init; }
+  public required Function AuthorizeFunction { get; init; }
   public required Function ConnectFunction { get; init; }
   public required Function DisconnectFunction { get; init; }
 }
@@ -28,45 +29,33 @@ internal class TopicStreamApiGatewayProps : ITopicStreamApiGatewayProps
 /// </summary>
 internal class TopicStreamApiGateway : Construct
 {
-  /// <summary>
-  /// The CDK WebSocketApi construct appears to have a bug where it doesn't set the "API key required" property to true
-  /// when ApiKeySelectionExpression is set. This is a workaround to ensure API key is required on the $connect route.
-  /// </summary>
-  private static void EnsureApiKeyRequiredOnConnectRoute(WebSocketApi api)
-  {
-    var connectRoute = api.Node.Children.OfType<WebSocketRoute>().FirstOrDefault(r => r.RouteKey == "$connect");
-    if (connectRoute is null || connectRoute.Node.DefaultChild is null)
-    {
-      throw new InvalidOperationException("Could not find the $connect route in the WebSocket API");
-    }
-    var cfnConnectRoute = (CfnRoute)connectRoute.Node.DefaultChild;
-    cfnConnectRoute.ApiKeyRequired = true;
-  }
-
-
   public TopicStreamApiGateway(Construct scope, string id, ITopicStreamApiGatewayProps props) : base(scope, id)
   {
-    // The CDK WebSocketApi appears to have a bug where it doesn't set the "API key required" property to true
-    // when ApiKeySelectionExpression is set. This is a workaround to ensure API key is required on the $connect route.
-    var api = new WebSocketApi(this, $"{id}-Api", new WebSocketApiProps
+    var api = new WebSocketApi(this, "Api", new WebSocketApiProps
     {
       ApiName = props.ApiName,
-      ApiKeySelectionExpression = new WebSocketApiKeySelectionExpression("$request.header.x-api-key"),
       RouteSelectionExpression = "$request.body.action",
-      ConnectRouteOptions = new WebSocketRouteOptions
-      {
-        Integration = new WebSocketLambdaIntegration($"{id}-ConnectIntegration", props.ConnectFunction),
-      },
-      DisconnectRouteOptions = new WebSocketRouteOptions
-      {
-        Integration = new WebSocketLambdaIntegration($"{id}-DisconnectIntegration", props.DisconnectFunction),
-      },
     });
-    EnsureApiKeyRequiredOnConnectRoute(api);
+
+    var authorizer = new WebSocketLambdaAuthorizer("Authorizer", props.AuthorizeFunction, new WebSocketLambdaAuthorizerProps
+    {
+      AuthorizerName = "ApiKeyAuthorizer",
+      IdentitySource = ["route.request.header.x-api-key"],
+    });
+
+    api.AddRoute("$connect", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("ConnectIntegration", props.ConnectFunction),
+      Authorizer = authorizer,
+    });
+    api.AddRoute("$disconnect", new WebSocketRouteOptions
+    {
+      Integration = new WebSocketLambdaIntegration("DisconnectIntegration", props.DisconnectFunction)
+    });
 
     // For this assessment, we only need a single stage; in a real production system, we might have multiple stages
     // based on requirements.
-    _ = new WebSocketStage(this, $"{id}-DefaultStage", new WebSocketStageProps
+    _ = new WebSocketStage(this, "DefaultStage", new WebSocketStageProps
     {
       StageName = "$default",
       Description = "The live, publicly accessible stage of the API",

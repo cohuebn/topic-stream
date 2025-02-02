@@ -1,8 +1,5 @@
-using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-
-[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
 namespace TopicStream.Functions;
 
@@ -20,7 +17,7 @@ class Connection
   /// <returns>A success response after processing the connection request</returns>
   public static APIGatewayProxyResponse Connect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogDebug("Connection request received {@request}", request);
+    context.Logger.LogTrace("Connection request received {@request}", request);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,
@@ -36,7 +33,7 @@ class Connection
   /// <returns>A success response after processing the disconnection request</returns>
   public static APIGatewayProxyResponse Disconnect(APIGatewayProxyRequest request, ILambdaContext context)
   {
-    context.Logger.LogDebug("Disconnection request received {@request}", request);
+    context.Logger.LogTrace("Disconnection request received {@request}", request);
     return new APIGatewayProxyResponse
     {
       StatusCode = 200,
