@@ -18,19 +18,33 @@ internal class ConnectionStatesProps : IConnectionStatesProps
 /// </summary>
 internal class ConnectionStates : Construct
 {
+  public Table ConnectionStatesTable { get; init; }
+
   public ConnectionStates(Construct scope, string id, IConnectionStatesProps props) : base(scope, id)
   {
-    var connectionStateTable = new Table(this, "ConnectionStates", new TableProps
+    // A timestamp attribute to support sorting by connection creation time
+    var connectionCreatedAtAttribute = new Attribute
+    {
+      Name = "ConnectionCreatedAt",
+      Type = AttributeType.STRING,
+    };
+
+    // Primary index supports fast lookup by connection id
+    ConnectionStatesTable = new Table(this, "ConnectionStates", new TableProps
     {
       TableName = ResourcePrefixer.Prefix(props.ResourcePrefix, "ConnectionStates"),
+      RemovalPolicy = Amazon.CDK.RemovalPolicy.DESTROY,
       PartitionKey = new Attribute
       {
         Name = "ConnectionId",
         Type = AttributeType.STRING,
       },
+      SortKey = connectionCreatedAtAttribute,
       BillingMode = BillingMode.PAY_PER_REQUEST,
     });
-    connectionStateTable.AddGlobalSecondaryIndex(new GlobalSecondaryIndexProps
+
+    // Secondary index supports fast lookup by user id
+    ConnectionStatesTable.AddGlobalSecondaryIndex(new GlobalSecondaryIndexProps
     {
       IndexName = "UserIdIndex",
       PartitionKey = new Attribute
@@ -38,6 +52,7 @@ internal class ConnectionStates : Construct
         Name = "UserId",
         Type = AttributeType.STRING,
       },
+      SortKey = connectionCreatedAtAttribute,
       ProjectionType = ProjectionType.ALL,
     });
   }

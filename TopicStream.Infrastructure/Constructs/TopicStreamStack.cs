@@ -24,7 +24,7 @@ internal class TopicStreamStack : Stack
 {
   public TopicStreamStack(Construct scope, string id, ITopicStreamStackProps props) : base(scope, id, props)
   {
-    _ = new ConnectionStates(this, "ConnectionStates", new ConnectionStatesProps
+    var connectionStates = new ConnectionStates(this, "ConnectionStates", new ConnectionStatesProps
     {
       ResourcePrefix = props.ResourcePrefix,
     });
@@ -41,6 +41,7 @@ internal class TopicStreamStack : Stack
     {
       ResourcePrefix = props.ResourcePrefix,
       BundledCode = props.BundledCode,
+      ConnectionStatesTable = connectionStates.ConnectionStatesTable,
     });
 
     _ = new TopicStreamApiGateway(this, "Api", new TopicStreamApiGatewayProps

@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Amazon.CDK.AWS.DynamoDB;
+using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
 
@@ -7,12 +10,14 @@ internal interface IConnectionFunctionsProps
 {
   public string? ResourcePrefix { get; }
   public AssetCode BundledCode { get; }
+  public Table ConnectionStatesTable { get; }
 }
 
 internal class ConnectionFunctionsProps : IConnectionFunctionsProps
 {
   public string? ResourcePrefix { get; init; }
   public required AssetCode BundledCode { get; init; }
+  public required Table ConnectionStatesTable { get; init; }
 }
 
 /// <summary>
@@ -30,13 +35,23 @@ internal class ConnectionFunctions : Construct
       FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "Connect"),
       Handler = "TopicStream.Functions::TopicStream.Functions.Connections.Connection::Connect",
       Code = props.BundledCode,
+      Environment = new Dictionary<string, string>
+      {
+        ["CONNECTION_STATES_TABLE_NAME"] = props.ConnectionStatesTable.TableName,
+      },
     });
+    props.ConnectionStatesTable.GrantReadWriteData(ConnectFunction);
 
     DisconnectFunction = new Function(this, "Disconnect", new TopicStreamFunctionProps
     {
       FunctionName = ResourcePrefixer.Prefix(props.ResourcePrefix, "Disconnect"),
       Handler = "TopicStream.Functions::TopicStream.Functions.Connections.Connection::Connect",
       Code = props.BundledCode,
+      Environment = new Dictionary<string, string>
+      {
+        ["CONNECTION_STATES_TABLE_NAME"] = props.ConnectionStatesTable.TableName,
+      },
     });
+    props.ConnectionStatesTable.GrantReadWriteData(DisconnectFunction);
   }
 }

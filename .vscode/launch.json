@@ -22,7 +22,7 @@
       "preLaunchTask": "build",
       "program": "TopicStream.FunctionalTests/bin/Debug/net8.0/TopicStream.FunctionalTests.dll",
       "env": {
-        "TOPIC_STREAM_URL": "wss://cfm5fet2lb.execute-api.us-east-2.amazonaws.com/live/",
+        "TOPIC_STREAM_URL": "wss://p268kvja88.execute-api.us-east-2.amazonaws.com/live/",
         "TOPIC_STREAM_SUBSCRIBER_1_API_KEY": "i-am-subscriber-1-and-this-is-my-key",
         "TOPIC_STREAM_SUBSCRIBER_2_API_KEY": "i-am-subscriber-2-and-this-is-my-key",
         "TOPIC_STREAM_PUBLISHER_API_KEY": "i-am-the-publisher-and-this-is-my-key",
