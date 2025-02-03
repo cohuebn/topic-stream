@@ -21,7 +21,7 @@ namespace TopicStream.FunctionalTests.Users;
 public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) : User(apiKey, cancellationToken)
 {
   private readonly List<string> _subscribedTopics = [];
-  private readonly ReceivedMessages _receivedMessages = [];
+  public readonly ReceivedMessages ReceivedMessages = [];
 
   public async Task SubscribeAsync(string topic)
   {
@@ -46,12 +46,16 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
     }
   }
 
+  /// <summary>
+  /// Receive messages from the websocket until the expected number of messages is reached
+  /// </summary>
+  /// <param name="expectedMessageCount">The expected number of messages</param>
   private async Task ReceiveMessagesAsync(int expectedMessageCount)
   {
     // 4 KB buffer is good enough for these tests
     var buffer = new byte[1024 * 4];
 
-    while (_wsClient.State == WebSocketState.Open && _receivedMessages.Count < expectedMessageCount)
+    while (_wsClient.State == WebSocketState.Open && ReceivedMessages.TotalMessageCount < expectedMessageCount)
     {
       var result = await _wsClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
@@ -67,10 +71,16 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
         var parsedMessage = JsonSerializer.Deserialize<PublishMessage>(message);
         if (parsedMessage is not null)
         {
-          _receivedMessages.AddMessage(parsedMessage.Topic, parsedMessage.Message);
+          ReceivedMessages.AddMessage(parsedMessage.Topic, parsedMessage.Message);
         }
       }
     }
+  }
+
+  private static async Task TimeoutWaitingForMessagesAsync(TimeSpan timeout)
+  {
+    await Task.Delay(timeout);
+    Assert.Fail("Timeout reached while waiting for messages");
   }
 
   /// <summary>
@@ -79,11 +89,13 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
   /// <param name="expectedMessageCount">How many messages are expected?</param>
   /// <param name="timeout">The timeout to wait for messages</param>
   /// <returns></returns>
-  public async Task WaitForMessagesAsync(int expectedMessageCount, TimeSpan? timeout)
+  public async Task WaitForMessagesAsync(int expectedMessageCount, TimeSpan? timeout = null)
   {
-    var defaultedTimeout = timeout ?? TimeSpan.FromSeconds(10);
-    var messageReceiver = ReceiveMessagesAsync(expectedMessageCount);
-    await Task.WhenAny(messageReceiver, Task.Delay(defaultedTimeout));
+    var defaultedTimeout = timeout ?? TimeSpan.FromSeconds(30);
+    await Task.WhenAny(
+      ReceiveMessagesAsync(expectedMessageCount),
+      TimeoutWaitingForMessagesAsync(defaultedTimeout)
+    );
   }
 
   /// <summary>

@@ -88,7 +88,9 @@ internal class TopicStreamStack : Stack
       ResourcePrefix = props.ResourcePrefix,
       BundledCode = props.BundledCode,
       TopicMessageQueue = topicMessages.Queue,
-      BroadcastCallbackUrl = apiGateway.LiveStage.CallbackUrl
+      ApiGateway = apiGateway,
+      ConnectionStatesTable = connectionStates.ConnectionStatesTable,
+      SubscriptionsTable = subscriptions.SubscriptionsTable,
     });
   }
 }

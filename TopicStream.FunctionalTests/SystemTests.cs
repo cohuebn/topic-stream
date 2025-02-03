@@ -77,12 +77,13 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
 
     /// <summary>
     /// Validate that:
-    /// 1. An authorized user can subscribe to a topic
-    /// 2. When a publisher publishes a new message, the subscriber receives it
-    /// 3. The subscriber can unsubscribe from that topic
+    /// 1. Subscribers can subscribe to a topic
+    /// 2. When a publisher publishes a new message, active subscribers receive it
+    /// 3. Inactive subscribers don't impact the delivery of messages
+    /// 4. Subscribers can unsubscribe from that topic
     /// </summary>
     [Fact]
-    public async Task AuthorizedUser_CanReceiveMessagesOnSubscribedTopic()
+    public async Task PublishedMessages_AreDeliveredToAllActiveConnections()
     {
         var testCancellation = TestContext.Current.CancellationToken;
         using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
@@ -94,6 +95,9 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         using Publisher publisher = new(_testApiKeys.Publisher, testCancellation);
         await publisher.ConnectAsync();
         await publisher.Publish(topic, "Can you see me?");
+
+        await subscriber.WaitForMessagesAsync(1);
+        var receivedMessage = subscriber.ReceivedMessages;
 
         var unsubscribeMessage = new SubscribeMessage(topic);
         await subscriber.UnsubscribeAsync(topic);
