@@ -12,8 +12,7 @@ To develop, build, and deploy this application, you will need the following on y
 - [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html): The AWS CDK is
   used to deploy components to AWS
 - [Docker](https://docs.docker.com/desktop/): The AWS CDK uses Docker under the hood when
-  bundling source code for Lambda deployment. Additionally, the integration tests use
-  Docker to spin up Localstack resources
+  bundling source code for Lambda deployment.
 
 ### IDEs
 
