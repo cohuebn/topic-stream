@@ -17,13 +17,27 @@ namespace TopicStream.FunctionalTests.Users;
 public abstract class User(TestApiKey apiKey, CancellationToken cancellationToken) : IAsyncDisposable, IDisposable
 {
   protected readonly TestApiKey _apiKey = apiKey;
-  protected readonly ClientWebSocket _wsClient = new();
+  protected ClientWebSocket? _wsClient = null;
+
+  protected ClientWebSocket FailIfNotConnected()
+  {
+    if (_wsClient == null)
+    {
+      throw new InvalidOperationException("Client is not connected. Call ConnectAsync first.");
+    }
+    return _wsClient;
+  }
 
   /// <summary>
   /// Connect to the websocket API
   /// </summary>
   public async Task ConnectAsync()
   {
+    if (_wsClient != null)
+    {
+      throw new InvalidOperationException("Client is already running. Call DisconnectAsync first if you wish to start.");
+    }
+    _wsClient = new ClientWebSocket();
     await _wsClient.ConnectAsync(
         TestConfiguration.GetUri(),
         OneTimeApiKeyMessageInvokerFactory.Create(_apiKey.ApiKey),
@@ -36,7 +50,8 @@ public abstract class User(TestApiKey apiKey, CancellationToken cancellationToke
   /// </summary>
   public async Task SendAsync<T>(T message) where T : Message
   {
-    await _wsClient.SendAsync(
+    var wsClient = FailIfNotConnected();
+    await wsClient.SendAsync(
         MessagePreparer.GetBytes(message),
         WebSocketMessageType.Text,
         true,
@@ -49,7 +64,9 @@ public abstract class User(TestApiKey apiKey, CancellationToken cancellationToke
   /// </summary>
   public async Task DisconnectAsync()
   {
-    await _wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", cancellationToken);
+    var wsClient = FailIfNotConnected();
+    await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", cancellationToken);
+    _wsClient = null;
   }
 
   /// <summary>
@@ -58,7 +75,7 @@ public abstract class User(TestApiKey apiKey, CancellationToken cancellationToke
   /// <returns></returns>
   public virtual async ValueTask DisposeAsync()
   {
-    if (_wsClient.State == WebSocketState.Open)
+    if (_wsClient is not null && _wsClient.State == WebSocketState.Open)
     {
       await DisconnectAsync();
     }

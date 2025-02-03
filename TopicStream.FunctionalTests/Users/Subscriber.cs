@@ -52,12 +52,13 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
   /// <param name="expectedMessageCount">The expected number of messages</param>
   private async Task ReceiveMessagesAsync(int expectedMessageCount)
   {
+    var wsClient = FailIfNotConnected();
     // 4 KB buffer is good enough for these tests
     var buffer = new byte[1024 * 4];
 
-    while (_wsClient.State == WebSocketState.Open && ReceivedMessages.TotalMessageCount < expectedMessageCount)
+    while (wsClient.State == WebSocketState.Open && ReceivedMessages.TotalMessageCount < expectedMessageCount)
     {
-      var result = await _wsClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+      var result = await wsClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
       if (result.MessageType == WebSocketMessageType.Close)
       {
@@ -104,7 +105,7 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
   /// <returns></returns>
   public override async ValueTask DisposeAsync()
   {
-    if (_wsClient.State == WebSocketState.Open)
+    if (_wsClient is not null && _wsClient.State == WebSocketState.Open)
     {
       await UnsubscribeFromAllTopicsAsync();
     }

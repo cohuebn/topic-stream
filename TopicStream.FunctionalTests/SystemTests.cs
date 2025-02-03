@@ -78,8 +78,7 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
     /// Validate that:
     /// 1. Subscribers can subscribe to a topic
     /// 2. When a publisher publishes a new message, active subscribers receive it
-    /// 3. Inactive subscribers don't impact the delivery of messages
-    /// 4. Subscribers can unsubscribe from that topic
+    /// 3. Subscribers can unsubscribe from that topic
     /// </summary>
     [Fact]
     public async Task PublishedMessages_AreDeliveredToSubscriber()
@@ -100,13 +99,82 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         var messagesForTopic = subscriber.ReceivedMessages.GetMessagesOnTopic(topic);
         Assert.Single(messagesForTopic);
         Assert.Equal("Can you see me?", messagesForTopic[0]);
+    }
 
-        var unsubscribeMessage = new SubscribeMessage(topic);
-        await subscriber.UnsubscribeAsync(topic);
+    /// <summary>
+    /// Validate that:
+    /// 1. Subscribers do not receive messages that occurred while they were not active
+    /// 2. When a subscriber reconnects, they see new messages on the topic
+    /// </summary>
+    [Fact]
+    public async Task Subscribers_SubscribedToATopic_GetNewMessagesAfterReconnection()
+    {
+        var testCancellation = TestContext.Current.CancellationToken;
+        using Subscriber subscriber1 = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber1.ConnectAsync();
 
-        await publisher.DisconnectAsync();
-        await subscriber.DisconnectAsync();
+        var topic = $"test-topic-{Guid.NewGuid()}";
+        await subscriber1.SubscribeAsync(topic);
+        await subscriber1.DisconnectAsync();
 
-        Assert.True(true, "User can subscribe");
+        using Subscriber subscriber2 = new(_testApiKeys.Subscriber2, testCancellation);
+        await subscriber2.ConnectAsync();
+        await subscriber2.SubscribeAsync(topic);
+
+        // Missed message sent while subscriber was not active
+        using Publisher publisher = new(_testApiKeys.Publisher, testCancellation);
+        await publisher.ConnectAsync();
+        await publisher.Publish(topic, "Where'd you go?");
+
+        // Even though subscriber1 was not active, subscriber2 should have received the message
+        // This also ensures we wait for the message to be delivered before reconnecting subscriber1
+        await subscriber2.WaitForMessagesAsync(1);
+
+        // Reconnect subscriber1 and ensure they receive the message
+        await subscriber1.ConnectAsync();
+        await publisher.Publish(topic, "Welcome back!");
+        await subscriber1.WaitForMessagesAsync(1);
+
+        var messagesForTopic = subscriber1.ReceivedMessages.GetMessagesOnTopic(topic);
+        Assert.Single(messagesForTopic);
+        Assert.Equal("Welcome back!", messagesForTopic[0]);
+    }
+
+    /// <summary>
+    /// Validate that multiple subscribers can subscribe to a topic
+    /// and receive the same messages from a publisher
+    /// </summary>
+    [Fact]
+    public async Task MultipleSubscribers_SubscribedToATopic_AllGetMessages()
+    {
+        var testCancellation = TestContext.Current.CancellationToken;
+        using Subscriber subscriber1 = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber1.ConnectAsync();
+
+        var topic = $"test-topic-{Guid.NewGuid()}";
+        await subscriber1.SubscribeAsync(topic);
+
+        using Subscriber subscriber2 = new(_testApiKeys.Subscriber2, testCancellation);
+        await subscriber2.ConnectAsync();
+        await subscriber2.SubscribeAsync(topic);
+
+        using Publisher publisher = new(_testApiKeys.Publisher, testCancellation);
+        await publisher.ConnectAsync();
+        await publisher.Publish(topic, "#1 for all!");
+        await publisher.Publish(topic, "#2 for all!");
+
+        // Wait for both subscribers to receive the messages
+        await Task.WhenAll(
+            subscriber1.WaitForMessagesAsync(2),
+            subscriber2.WaitForMessagesAsync(2)
+        );
+
+        var subscriber1Messages = subscriber1.ReceivedMessages.GetMessagesOnTopic(topic);
+        Assert.Contains("#1 for all!", subscriber1Messages);
+        Assert.Contains("#2 for all!", subscriber1Messages);
+
+        var subscriber2Messages = subscriber2.ReceivedMessages.GetMessagesOnTopic(topic);
+        Assert.Contains("#1 for all!", subscriber2Messages);
+        Assert.Contains("#2 for all!", subscriber2Messages);
     }
 }
