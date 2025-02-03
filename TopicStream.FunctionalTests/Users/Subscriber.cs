@@ -68,7 +68,7 @@ public class Subscriber(TestApiKey apiKey, CancellationToken cancellationToken) 
       var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
       if (message is not null)
       {
-        var parsedMessage = JsonSerializer.Deserialize<PublishMessage>(message);
+        var parsedMessage = JsonSerializer.Deserialize<BroadcastMessage>(message, MessageSerializerOptions.Standard);
         if (parsedMessage is not null)
         {
           ReceivedMessages.AddMessage(parsedMessage.Topic, parsedMessage.Message);

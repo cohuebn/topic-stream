@@ -42,15 +42,14 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         Assert.Contains("The server returned status code '401'", exception.Message);
     }
 
+    // This is a simple proof-of-life test to ensure the user can connect and disconnect
+    // The assertion is silly, but this is a good sanity check that web socket API is allowing connections.
+    // It validates:
+    // 1. Auth is working as expected for a valid user
+    // 2. The user only needs an API key to connect; they can disconnect without the key
     [Fact]
     public async Task AuthorizedUser_CanConnect_AndDisconnect()
     {
-        // This is a simple proof-of-life test to ensure the user can connect and disconnect
-        // The assertion is silly, but this is a good sanity check that web socket API is allowing connections.
-        // It validates:
-        // 1. Auth is working as expected for a valid user
-        // 2. The user only needs an API key to connect; they can disconnect without the key
-
         var testCancellation = TestContext.Current.CancellationToken;
         using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
         await subscriber.ConnectAsync();
@@ -83,7 +82,7 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
     /// 4. Subscribers can unsubscribe from that topic
     /// </summary>
     [Fact]
-    public async Task PublishedMessages_AreDeliveredToAllActiveConnections()
+    public async Task PublishedMessages_AreDeliveredToSubscriber()
     {
         var testCancellation = TestContext.Current.CancellationToken;
         using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
@@ -97,7 +96,10 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         await publisher.Publish(topic, "Can you see me?");
 
         await subscriber.WaitForMessagesAsync(1);
-        var receivedMessage = subscriber.ReceivedMessages;
+
+        var messagesForTopic = subscriber.ReceivedMessages.GetMessagesOnTopic(topic);
+        Assert.Single(messagesForTopic);
+        Assert.Equal("Can you see me?", messagesForTopic[0]);
 
         var unsubscribeMessage = new SubscribeMessage(topic);
         await subscriber.UnsubscribeAsync(topic);

@@ -49,27 +49,36 @@ class BroadcastHandlers
     return activeConnections.GetValueOrDefault(principalId, []);
   }
 
-  private async Task NotifyConnection(Connection connection, PublishMessage message, ILambdaContext context)
+  /// <summary>
+  /// Convert the message to a format that can be sent over websockets
+  /// </summary>
+  /// <param name="message">The message to send</param>
+  /// <returns>The memory stream used to send the message over websockets</returns>
+  private static MemoryStream SerializeMessageForWebSocketTransmission(BroadcastMessage message)
   {
-    context.Logger.LogTrace("Notifying connection {connection} with message {@message}", connection.ConnectionId, message);
-    byte[] byteArray = Encoding.UTF8.GetBytes(message.Message);
-    using var memoryStream = new MemoryStream(byteArray);
+    var jsonSerialized = JsonSerializer.Serialize(message, MessageSerializerOptions.Standard);
+    byte[] byteArray = Encoding.UTF8.GetBytes(jsonSerialized);
+    return new MemoryStream(byteArray);
+  }
+
+  private async Task NotifyConnection(string topic, Connection connection, MemoryStream serializedMessage, ILambdaContext context)
+  {
     var postToConnectionRequest = new PostToConnectionRequest
     {
       ConnectionId = connection.ConnectionId,
-      Data = memoryStream
+      Data = serializedMessage
     };
     var response = await _apiGatewayManagementClient.PostToConnectionAsync(postToConnectionRequest);
     if (response.HttpStatusCode == HttpStatusCode.OK)
     {
-      context.Logger.LogInformation("Notified connection {connection} on topic {topic}", connection.ConnectionId, message.Topic);
+      context.Logger.LogInformation("Notified connection {connection} on topic {topic}", connection.ConnectionId, topic);
     }
     else
     {
       context.Logger.LogError(
         "Failed to notify connection {connection} on topic {topic}. Response status {responseStatus}",
         connection.ConnectionId,
-        message.Topic,
+        topic,
         response.HttpStatusCode
       );
     }
@@ -81,23 +90,29 @@ class BroadcastHandlers
     Dictionary<string, List<Connection>> activeConnections
   )
   {
-    var publishedMessage = JsonSerializer.Deserialize<PublishMessage>(message.Body, MessageSerializerOptions.Standard);
-    context.Logger.LogDebug("Processing {@message}", publishedMessage);
+    var messageToBroadcast = JsonSerializer.Deserialize<BroadcastMessage>(message.Body, MessageSerializerOptions.Standard);
+    context.Logger.LogDebug("Processing {@message}", messageToBroadcast);
 
-    if (publishedMessage is null)
+    if (messageToBroadcast is null)
     {
       context.Logger.LogError("Invalid message received: {message}", message.Body);
       return;
     }
 
     // Get all subscriptions for the topic that are tied to an active connection
-    var subscriptionsDocuments = await _subscriptionsTable.Query(publishedMessage.Topic, new QueryFilter()).GetRemainingAsync();
+    var subscriptionsDocuments = await _subscriptionsTable.Query(messageToBroadcast.Topic, new QueryFilter()).GetRemainingAsync();
     var subscriptions = subscriptionsDocuments.Select(DynamoSubscriptionConverter.FromDynamoDocument);
     var connectionsToNotify = subscriptions
       .Select(subscription => FindMatchingConnectionsForPrincipal(subscription.PrincipalId, activeConnections))
       .SelectMany(connections => connections);
 
-    await Task.WhenAll(connectionsToNotify.Select(connection => NotifyConnection(connection, publishedMessage, context)));
+    var serializedMessage = SerializeMessageForWebSocketTransmission(messageToBroadcast);
+    await Task.WhenAll(connectionsToNotify.Select(connection => NotifyConnection(
+      messageToBroadcast.Topic,
+      connection,
+      serializedMessage,
+      context
+    )));
   }
 
   /// <summary>
