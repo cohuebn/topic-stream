@@ -177,4 +177,37 @@ public class SystemTests(ApiKeyProvisioner apiKeyProvisioner)
         Assert.Contains("#1 for all!", subscriber2Messages);
         Assert.Contains("#2 for all!", subscriber2Messages);
     }
+
+    /// <summary>
+    /// Validate that a subscriber can get messages from multiple topics
+    /// at the same time
+    /// </summary>
+    [Fact]
+    public async Task Subscriber_SubscribedToMultipleTopics_ReceivesAllMessages()
+    {
+        var testCancellation = TestContext.Current.CancellationToken;
+        using Subscriber subscriber = new(_testApiKeys.Subscriber1, testCancellation);
+        await subscriber.ConnectAsync();
+
+        var topic1 = $"test-topic-{Guid.NewGuid()}";
+        await subscriber.SubscribeAsync(topic1);
+        var topic2 = $"test-topic-{Guid.NewGuid()}";
+        await subscriber.SubscribeAsync(topic2);
+
+        using Publisher publisher = new(_testApiKeys.Publisher, testCancellation);
+        await publisher.ConnectAsync();
+        await publisher.Publish(topic1, "look here");
+        await publisher.Publish(topic2, "now look over here!");
+
+        // Wait for messages from both topics
+        await subscriber.WaitForMessagesAsync(2);
+
+        var messagesForTopic1 = subscriber.ReceivedMessages.GetMessagesOnTopic(topic1);
+        Assert.Single(messagesForTopic1);
+        Assert.Equal("look here", messagesForTopic1[0]);
+
+        var messagesForTopic2 = subscriber.ReceivedMessages.GetMessagesOnTopic(topic2);
+        Assert.Single(messagesForTopic2);
+        Assert.Equal("now look over here!", messagesForTopic2[0]);
+    }
 }
